@@ -1,4 +1,4 @@
-"""main.py
+"""main.py: Contains the application functionality
 
 Usage:
   main.py create_room (<name> <floor> <room_type>)...
@@ -11,15 +11,13 @@ Usage:
   main.py print_room <room_name>
   main.py save_state [--db=sqlite_database]
   main.py load_state <db_file_path>
-  main.py hello <first> <last>
-  greeter.py goodbye <name>
-  greeter.py (-h | --help)
+  main.py (-h | --help)
 
 Options:
-  -h --help                   Show this screen.
-  --wants_accomodation=<ans>  Specifies if person wants accommodation or not [default: N]
-  -o=<file_name>              Specifies a file to print output [default: screen]
-  --db=sqlite_database        Specifies a database to persist data [default: app.db]
+  -h --help                    Show this screen.
+  --wants_accommodation=<ans>  Specifies if person wants accommodation or not [default: N]
+  -o=<file_name>               Specifies a file to print output [default: screen]
+  --db=sqlite_database         Specifies a database to persist data [default: app.db]
 """
 
 from docopt import docopt
@@ -29,13 +27,15 @@ import base
 import pickle
 import os.path
 import random
+import sys
 
-from amity import Amity, RoomAllocation
+from amity import Amity
 from rooms import Room
 from persons import Person
 
+
+# set up Amity class
 amity = Amity()
-room_allocation = RoomAllocation()
 
 def get_rooms_as_list():
     """Returns a list of rooms in database"""
@@ -44,7 +44,7 @@ def get_rooms_as_list():
             room_objects = pickle.load(file)
         return room_objects
     else:
-        return False
+        return []
 
 def get_persons_as_list():
     """Returns a list of persons in database"""
@@ -53,7 +53,19 @@ def get_persons_as_list():
             person_objects = pickle.load(file)
         return person_objects
     else:
-        return False
+        return []
+
+def write_rooms(room_objects):
+    """Write room from memory to pickle"""
+    with open('rooms.pkl', 'wb') as file:
+        pickle.dump(room_objects, file)
+        print "Successfully updated room information to application"
+
+def write_persons(person_objects):
+    """Write room from memory to pickle"""
+    with open('persons.pkl', 'wb') as file:
+        pickle.dump(person_objects, file)
+        print "Successfully updated person information to application!"
 
 def get_allocations_as_list():
     """Returns a list of allocations of persons to rooms"""
@@ -62,56 +74,57 @@ def get_allocations_as_list():
             allocation_objects = pickle.load(file)
         return allocation_objects
     else:
-        return "There are no existing allocations in Amity!!!"
+        return []
 
 def create_room(name, floor, room_type):
     # create room and add to application
-    new_room = amity.createRoom(name, floor, room_type)
+    new_room = amity.createRoom(name.lower(), floor, room_type)
     room_objects = []
     # read from room file if it exists
-    if os.path.isfile('rooms.pkl'):
-        with open('rooms.pkl','rb') as file:
-            room_objects = pickle.load(file)
-    print "helo {0}".format(room_objects)
+    room_objects = get_rooms_as_list()
     room_objects.append(new_room)
-    print room_objects
     # write to room file
-    with open('rooms.pkl', 'wb') as file:
-        pickle.dump(room_objects, file)
-        print "Room Created"
+    write_rooms(room_objects)
 
 def add_person(first_name, last_name, employee_type, wants_accommodation):
     # add the person and automatically allocate a room
-    person_objects = []
-    if os.path.isfile('persons.pkl'):
-        with open('persons.pkl', 'rb') as file:
-            person_objects = pickle.load(file)
-    print person_objects
-    new_person = amity.addPerson(len(person_objects), first_name, last_name, 
-        employee_type)
-    person_objects.append(new_person)
-    print person_objects
-    #write to persons.pkl
-    with open('persons.pkl', 'wb') as file:
-        pickle.dump(person_objects, file)
-        print "Person Created!"
-    # randomly assign an office space to person if there is one in application
+    allocated_room = []
+    room_objects = get_rooms_as_list()
+    person_objects = get_persons_as_list()
+    # randomly pick an office space to assign person if there is one in 
+    # application
     if room_type_exists("office"):
-        randomly_allocate_person_a_room(new_person, employee_type, 
-            wants_accommodation, "office")
+        allocated_room.append(randomly_allocate_person_a_room(first_name, 
+            last_name, employee_type, "office"))
     else:
         print "There is no Office space currently in database!!!"
-    # randomly assign living space to fellow if he wants it
-    if room_type_exists("living space"):
-        if employee_type == "fellow" and wants_accommodation == "Y":
-            randomly_allocate_person_a_room(new_person, employee_type, 
-                wants_accommodation, "living space")
-    
+    # randomly pick a living space to assign fellow if he wants it
+    # and there is one in the application
+    if employee_type == "fellow" and wants_accommodation == "Y":
+        if room_type_exists("living space"):
+            allocated_room.append(randomly_allocate_person_a_room(first_name, 
+                last_name, employee_type, "living space"))
+        else:
+            print "There is no Living Space to currently in database"
 
-def randomly_allocate_person_a_room(person, employee_type, 
-    wants_accommodation, room_type):
-    room_objects = []
-    allocation_objects = []
+    new_person = amity.addPerson(len(person_objects), first_name.lower(), 
+        last_name.lower(), employee_type)
+
+    # create person and add rooms to person
+    for room in allocated_room:
+        new_person.room.append(room)
+        print "{0} {1} was assigned {2} {3}.".format(first_name, last_name, 
+            room.name.capitalize(), room.type)
+    person_objects.append(new_person)
+    # write to persons.pkl
+    write_persons(person_objects)
+    # write to rooms.pkl
+    write_rooms(room_objects)
+
+
+def randomly_allocate_person_a_room(first_name, last_name, employee_type,
+    room_type):
+    """Randomly allocates a room to a Person and returns assigned room"""
     if room_type == "office":
         capacity = amity.officeCapacity
     else:
@@ -120,47 +133,26 @@ def randomly_allocate_person_a_room(person, employee_type,
     if not os.path.isfile('rooms.pkl'):
         return ("No rooms have been created. You need to create a room "
                 "first before you can add people!!!")
-    with open('rooms.pkl', 'rb') as file:
-        room_objects = pickle.load(file)
-    
+    room_objects = get_rooms_as_list()
     # randomly allocate a vacant room
     random_index = random.randint(0, len(room_objects) - 1)
     searching_for_vacant_room = True
     while searching_for_vacant_room:
         if room_objects[random_index].noOfOccupants < capacity \
-            and room_objects[random_index].type \
-            == room_type:
+            and room_objects[random_index].type == room_type:
+            room_objects[random_index].noOfOccupants += 1
             searching_for_vacant_room = False
         else:
             random_index = random.randint(0, len(room_objects) - 1)
-    new_allocation = RoomAllocation(room=room_objects[random_index], 
-        person=person)
-    if os.path.isfile('allocations.pkl'):
-        with open('allocations.pkl', 'rb') as file:
-            allocation_objects = pickle.load(file)
-    allocation_objects.append(new_allocation)
-    room_objects[random_index].noOfOccupants += 1
-    
-    # write to rooms.pkl
-    with open('rooms.pkl', 'wb') as file:
-        pickle.dump(room_objects, file)
-        print "Successfully updated number of {0} occupants!".format(room_type)
-    
-    # write to allocations.pkl
-    with open('allocations.pkl', 'wb') as file:
-        pickle.dump(allocation_objects, file)
-        print "{0} has been allocated the {1} {2}.". \
-            format(person.firstName, room_objects[random_index].name, 
-                room_type)
-    
+    write_rooms(room_objects)
+    return room_objects[random_index]
+        
 def room_type_exists(room_type):
-    room_objects = []
+    """Returns true if a room exists, Returns False otherwise"""
     if not os.path.isfile('rooms.pkl'):
         return ("No rooms have been created. You need to create a room "
                 "first before you can add people!!!")
-    with open('rooms.pkl', 'rb') as file:
-        room_objects = pickle.load(file)
-
+    room_objects = get_rooms_as_list()
     for room in room_objects:
         if room.type == room_type:
             return True
@@ -168,13 +160,10 @@ def room_type_exists(room_type):
 
 def room_exists(room_name):
     """Checks if supplied room exists"""
-    room_objects = []
     if not os.path.isfile('rooms.pkl'):
         return ("No rooms have been created. You need to create a room "
                 "first before you can add reallocate someone!!!")
-    with open('rooms.pkl', 'rb') as file:
-        room_objects = pickle.load(file)
-
+    room_objects = get_rooms_as_list
     for room in room_objects:
         if room.name == room_name:
             return True
@@ -182,39 +171,42 @@ def room_exists(room_name):
 
 def get_person_identifier(first_name, last_name):
     """Return an identifier used to locate a specific person"""
-    person_objects = []
-    if os.path.isfile('persons.pkl'):
-        with open('persons.pkl', 'rb') as file:
-            person_objects = pickle.load(file)
+    person_objects = get_persons_as_list()
+    found_match = False
     for person in person_objects:
-        if person.first_name == first_name and person.last_name == last_name:
-            return person.identifier
+        if person.firstName == first_name and person.lastName == last_name:
+            print "{0} {1}'s identfier: {2}".format(first_name, last_name, 
+                person.identifier)
+            found_match = True
+    if not found_match:
+        print "No match was found for {0} {1}.".format(first_name, last_name)
 
 def get_person(person_identifier):
-    """Return person object with supplied person identifier"""
-    person_objects = []
-    if os.path.isfile('persons.pkl'):
-        with open('persons.pkl', 'rb') as file:
-            person_objects = pickle.load(file)
-    for person in person_objects:
+    """Return a tuple of a 
+    person object that has the supplied person identifier
+    and its position in the list of person objects
+    """
+    person_objects = get_persons_as_list()
+    for counter, person in enumerate(person_objects):
         if person.identifier == person_identifier:
-            return person
+            return (person, counter)
+    return (None, None)
 
 def get_room(room_name):
-    """Return person object and index with supplied person identifier"""
-    room_objects = []
-    if os.path.isfile('rooms.pkl'):
-        with open('rooms.pkl', 'rb') as file:
-            room_objects = pickle.load(file)
+    """
+    Return a tuple of a
+    room object that has the supllied person identifier
+    and its position in the list of person objects
+    """
+    room_objects = get_rooms_as_list()
     for counter, room in enumerate(room_objects):
         if room.name == room_name:
             return (room, counter)
+    return (None, None)
 
 def identifier_is_valid(person_identifier):
-    person_objects = []
-    if os.path.isfile('persons.pkl'):
-        with open('persons.pkl', 'rb') as file:
-            person_objects = pickle.load(file)
+    "Checks if the person_identifier parameter passed in is valid"
+    person_objects = get_persons_as_list()
     if person_identifier < len(person_objects)  or person_identifier >= 0:
         return True
     else:
@@ -222,46 +214,62 @@ def identifier_is_valid(person_identifier):
 
 def reallocate_person(person_identifier, room_name):
     """Transfer given person to a different room"""
-    room_objects = []
-    allocation_objects = []
     # check if identifier is valid
     if not identifier_is_valid(person_identifier):
-        return "You entered an invalid Identifier!!!"
-    # if valid, create room object
-    else:
-    # load room from pickle
-        # read from room file if it exists
-        if os.path.isfile('rooms.pkl'):
-            with open('rooms.pkl','rb') as file:
-                room_objects = pickle.load(file)
-
+        return "You entered an Invalid Identifier!!!"
+    # if valid, load room from pickle
+    room_objects = get_rooms_as_list()
     # find person on allocation table
-    if os.path.isfile('allocations.pkl'):
-        with open('allocations.pkl', 'rb') as file:
-            allocation_objects = pickle.load(file)
-    else:
-        return "There are no existing allocations in Amity!!!"
-    person = get_person(person_identifier)
+    person_to_reallocate, person_index = get_person(person_identifier)
+    if not person_to_reallocate:
+        print "You entered an Invalid Identifier!!!"
+        return
+    # get the new room object and check that it has vacancy
     new_room, new_room_index = get_room(room_name)
-    old_room, old_room_index = get_room(room_name)
-    new_allocation = RoomAllocation(person=person, room=new_room)
-    searching_for_old_allocation = True
-    counter = 0
-    while searching_for_old_allocation:
-        if allocation.person.identifier == person_identifier:
-            allocation_objects[counter] = new_allocation
-            searching_for_old_allocation = False
-        counter += 1
-    room_objects[new_room_index].noOfOccupants -= 1
-    room_objects[old_room_index].noOfOccupants += 1
+    if new_room.noOfOccupants >= amity.officeCapacity and \
+        new_room.type == "office":
+        print "FAILURE!!! The room you selected has no vacancy!"
+    if new_room.noOfOccupants >= amity.livingSpaceCapacity and \
+        new_room.type == "living space":
+        print "FAILURE!!! The room you selected has no vacancy!"
 
+    reallocation_successful = False
+    room_index = None
+    for room_index in range(len(person_to_reallocate.room)):
+        if person_to_reallocate.room[room_index].type == new_room.type:
+            old_room, old_room_index = get_room(person_to_reallocate. \
+                room[room_index].name)
+            person_to_reallocate.room.pop(room_index)
+            person_to_reallocate.room.append(new_room)
+            room_objects[new_room_index].noOfOccupants += 1
+            room_objects[old_room_index].noOfOccupants -= 1
+            reallocation_successful = True
+            print ("{0} Successfully moved from {1} to {2}".format \
+                (person_to_reallocate.firstName, old_room.name, new_room.name))
+            break
+
+    if not reallocation_successful:
+        print ("REALLOCATION FAILURE!!!\n You attempted to move person to a "
+            "room of a different type.")
+
+    if room_index is None:
+        print ("REALLOCATION FAILURE!!!\nThere are no current allocations for "
+                "this user. Consider fresh allocations.")
+
+    # apply changes to person_objects
+    person_objects = get_persons_as_list()
+    person_objects[person_index] = person_to_reallocate
+
+    # write to pickle
+    write_persons(person_objects)
+    write_rooms(room_objects)
+
+            
 def loads_people(text_file):
     """Adds people to room from text file specified"""
     with open(text_file, 'rb') as file:
         data = file.read()
     person_list = data.split("\n")
-    import pdb
-    pdb.set_trace()
     for entry in person_list:
         person = entry.split()
         if len(person) == 4:
@@ -275,16 +283,14 @@ def loads_people(text_file):
 
 def get_allocations_as_dict():
     """Get allocation table from pkl file and return as dictionary"""
-    if os.path.isfile('allocations.pkl'):
-        with open('allocations.pkl', 'rb') as file:
-            allocation_objects = pickle.load(file)
-    else:
-        return "There are no existing allocations in Amity!!!"
+    person_objects = get_persons_as_list()
     allocation_dict = {}
-    for allocation in allocation_objects:
-        key = allocation.room.name
-        allocation_dict[key] = allocation_dict.get(key, []) + \
-            [allocation.person.firstName + " " + allocation.person.lastName]
+    for person in person_objects:
+        for room in person.room:
+            key = room.name
+            allocation_dict[key] = allocation_dict.get(key, []) + \
+                [person.firstName + " " + \
+                person.lastName]
     return allocation_dict
 
 def print_allocations(output):
@@ -292,6 +298,9 @@ def print_allocations(output):
     Prints to a text file if that is provided.
     """
     allocation_dict = get_allocations_as_dict()
+    if not allocation_dict:
+        print "There are no allocations in database"
+        return
     # prepare the output message
     allocation_list = []
     for key in allocation_dict:
@@ -347,20 +356,18 @@ def print_unallocated(output):
 
 def print_room(room_name):
     """Prints names of occupants in a room"""
-    allocation_objects = get_allocations_as_list()
-    print "NAMES OF PEOPLE IN {0}".format(room_name.upper())
-    found_match = False
-    for allocation in allocation_objects:
-        if allocation.room.name == room_name:
-            found_match = True
-            print "{0} {1}".format(allocation.person.firstName, 
-                allocation.person.lastName)
-    if not found_match:
+    allocation_dict = get_allocations_as_dict()
+    print "NAMES OF PEOPLE IN {0}\n".format(room_name.upper())
+    try:
+        for person_name in allocation_dict[room_name]:
+            print "{0}".format(person_name)
+        print "\n"
+    except KeyError:
         print "There is no one in this Room!!!"
 
 def save_state(db_name):
     """Moves files from pickle to the database"""
-    #set up database
+    # set up database
     engine = create_engine("sqlite:///{0}".format(db_name))
     base.Base.metadata.create_all(engine, checkfirst=True)
     Session = sessionmaker(bind=engine)
@@ -368,81 +375,58 @@ def save_state(db_name):
     
     try:
         # read and copy objects from rooms.pkl into db
-        room_objects = get_rooms_as_list()
-        #import pdb
-        #pdb.set_trace()
-        for room in room_objects:
-            session.add(room)
-            session.commit()
-
-        # read and copy objects from persons.pkl into db
         person_objects = get_persons_as_list()
-        for person in person_objects:
-            session.add(person)
-            session.commit()
-
-        # read and copy objects from allocations.pkl into db
-        allocation_objects = get_allocations_as_list()
-        for allocation in allocation_objects:
-            session.add(allocation)
-            session.commit()
-
+        session.add_all(person_objects)
+        session.commit()
         print "Successfully Stored application data in database"
+        
+        # delete pickle files
+        os.remove("rooms.pkl")
+        os.remove("persons.pkl")
+        
     except:
+        print "Error: {0}".format(sys.exc_info()[1])
         session.rollback()
 
 def load_state(db_name):
     """Loads data from database into application"""
-    #set up database
+    # set up database
     engine = create_engine("sqlite:///{0}".format(db_name))
-    import pdb
-    pdb.set_trace()
     base.Base.metadata.create_all(engine, checkfirst=True)
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    # load rooms 
-    room_objects = session.query(Room).all()
-    # write to rooms.pkl file
-    with open('rooms.pkl', 'wb') as file:
-        pickle.dump(room_objects, file)
-        print "Loaded all rooms from database into application"
-
     # load persons
     person_objects = session.query(Person).all()
-    # write to persons.pkl file
-    with open('persons.pkl', 'wb') as file:
-        pickle.dump(person_objects, file)
+    if person_objects:
+        write_persons(person_objects)
         print "Loaded all records for people from database into application"
-
-    # load allocation table
-    allocation_objects = session.query(RoomAllocation).all()
-    # write to allocations.pkl file
-    with open('allocations.pkl', 'wb') as file:
-        pickle.dump(allocation_objects, file)
-        print  "Loaded all allocations from database into application"
-
-    print "Successfully copied all data from database into application"
-
-def hello(name,last):
-    print('Hello, {0}'.format(name))
-    print('last, {0}'.format(last))
-
-
-
-def goodbye(name):
-    print('Goodbye, {0}'.format(name))
+    else:
+        print "Failure!!! No person has been added to database."         
+    
+    # load rooms 
+    room_objects = session.query(Room).all()
+    session.close()
+    if room_objects:
+        room_dict = {}
+        for room in room_objects:
+            key = room.name
+            room_dict[key] = room_dict.get(key, []) + [room]
+        room_objects = []
+        for key in room_dict:
+            room_dict[key][0].noOfOccupants = len(room_dict[key])
+            room_objects.append(room_dict[key][0])
+        write_rooms(room_objects)
+        print "Loaded all rooms from database into application"
+    else:
+        print "Failure!!! No Room has been added to database"
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     print arguments
 
     # if an argument called hello was passed, execute the hello logic.
-    if arguments['hello']:
-        hello(arguments['<name>'],arguments['<last>'])
-    elif arguments['goodbye']:
-        goodbye(arguments['<name>']) 
-    elif arguments['create_room']:
+    if arguments['create_room']:
         for i in range(len(arguments['<name>'])):
             create_room(arguments['<name>'][i], int(arguments['<floor>'][i]), arguments['<room_type>'][i])
     elif arguments['add_person']:
@@ -450,7 +434,7 @@ if __name__ == '__main__':
     elif arguments['get_person_identifier']:
         get_person_identifier(arguments['<first_name>'], arguments['<last_name>'])
     elif arguments['reallocate_person']:
-        reallocate_person(arguments['<person_identifier>'], arguments['<new_room_name>'])
+        reallocate_person(int(arguments['<person_identifier>']), arguments['<new_room_name>'])
     elif arguments['loads_people']:
         loads_people(arguments['<text_file>'])
     elif arguments['print_allocations']:
