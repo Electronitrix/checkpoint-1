@@ -14,8 +14,8 @@ class Person(Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
     identifier = Column(Integer)
-    firstName = Column(String(20))
-    lastName = Column(String(20))
+    first_name = Column(String(20))
+    last_name = Column(String(20))
     room = relationship("Room", secondary=allocation_table, lazy='subquery')
     type = Column(String(20))
 

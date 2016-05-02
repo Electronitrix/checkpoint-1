@@ -23,32 +23,32 @@ class AmityRoomAllocationClassesTestSuite(unittest.TestCase):
         self.amity = Amity()
 
     def test_person_type(self):
-        person = Person(identifier=0, firstName="Erika", lastName="Dike")
+        person = Person(identifier=0, first_name="Erika", last_name="Dike")
         self.assertTrue((type(person) is Person), msg=
             "Person object was not Created!!!")
 
     def test_fellow_type(self):
-        fellow = Fellow(identifier=0, firstName="Erika", lastName="Dike")
+        fellow = Fellow(identifier=0, first_name="Erika", last_name="Dike")
         self.assertTrue((type(fellow) is Fellow), msg=
             "Fellow object was not Created!!!")
 
     def test_staff_type(self):
-        staff = Staff(identifier=0, firstName="Erika", lastName="Dike")
+        staff = Staff(identifier=0, first_name="Erika", last_name="Dike")
         self.assertTrue((type(staff) is Staff), msg=
             "Staff object was not Created!!!")
 
     def test_room_type(self):
-        room = Room(name="Iroko", floor=1, noOfOccupants=0, capacity=0)
+        room = Room(name="Iroko", floor=1, no_of_occupants=0, capacity=0)
         self.assertTrue((type(room) is Room), msg=
             "Room object was not Created!!!")
 
     def test_office_type(self):
-        office = Office(name="Bellows", floor=0, noOfOccupants=0, capacity=6)
+        office = Office(name="Bellows", floor=0, no_of_occupants=0, capacity=6)
         self.assertTrue((type(office) is Office), msg=
             "Office object was not Created!!!")
 
     def test_living_space_type(self):
-        living_space = LivingSpace(name="Iroko", floor=1, noOfOccupants=0, capacity=0)
+        living_space = LivingSpace(name="Iroko", floor=1, no_of_occupants=0, capacity=0)
         self.assertTrue((type(living_space) is LivingSpace), msg=
             "Fellow object was not Created!!!")
 
@@ -56,9 +56,9 @@ class AmityRoomAllocationClassesTestSuite(unittest.TestCase):
         self.assertListEqual(
             [6, 4, 0],
             [
-                self.amity.officeCapacity,
-                self.amity.livingSpaceCapacity,
-                self.amity.initialNoOfOccupants
+                self.amity.office_capacity,
+                self.amity.living_space_capacity,
+                self.amity.initial_no_of_occupants
             ],
             msg="Amity object is not initialized with the right values"
         )
@@ -77,7 +77,7 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
             [
                 room_objects[0].name,
                 room_objects[0].floor,
-                room_objects[0].noOfOccupants,
+                room_objects[0].no_of_occupants,
                 room_objects[0].capacity,
                 room_objects[0].type
             ],
@@ -93,8 +93,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         self.assertListEqual(
             ["erika", "dike", "staff"],
             [
-                person_objects[0].firstName,
-                person_objects[0].lastName,
+                person_objects[0].first_name,
+                person_objects[0].last_name,
                 person_objects[0].type
             ],
             msg=("add_person function does not initialize Person object with "
@@ -112,7 +112,7 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
             ["bellows", 1, "office"],
             [
                 person_objects[0].room[0].name,
-                person_objects[0].room[0].noOfOccupants,
+                person_objects[0].room[0].no_of_occupants,
                 person_objects[0].room[0].type
             ],
             msg=("add_person function should randomly allocate staff to an "
@@ -132,10 +132,10 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
             ["bellows", 1, "office", "iroko", 1, "living space"],
             [
                 person_objects[0].room[0].name,
-                person_objects[0].room[0].noOfOccupants,
+                person_objects[0].room[0].no_of_occupants,
                 person_objects[0].room[0].type,
                 person_objects[0].room[1].name,
-                person_objects[0].room[1].noOfOccupants,
+                person_objects[0].room[1].no_of_occupants,
                 person_objects[0].room[1].type
             ],
             msg=("add_person function should randomly allocate fellow both "
@@ -288,13 +288,13 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
                 ["nengi", "adoki", "staff"]
             ],
             [
-                [person_objects[0].firstName, person_objects[0].lastName, \
+                [person_objects[0].first_name, person_objects[0].last_name, \
                     person_objects[0].type],
-                [person_objects[1].firstName, person_objects[1].lastName, \
+                [person_objects[1].first_name, person_objects[1].last_name, \
                     person_objects[1].type],
-                [person_objects[2].firstName, person_objects[2].lastName, \
+                [person_objects[2].first_name, person_objects[2].last_name, \
                     person_objects[2].type],
-                [person_objects[3].firstName, person_objects[3].lastName, \
+                [person_objects[3].first_name, person_objects[3].last_name, \
                     person_objects[3].type]    
             ],
             msg=("loads_people does not load correctly")
@@ -460,7 +460,7 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
     #             ["bellows", 0, "office"]
     #         ],
     #         [
-    #             [person_objects[0].firstName, person_objects[0].lastName, \
+    #             [person_objects[0].first_name, person_objects[0].last_name, \
     #                 person_objects[0].type],
     #             [room_objects[0].name, room_objects[0].floor, \
     #                 room_objects[0].type]

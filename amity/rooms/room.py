@@ -15,7 +15,7 @@ class Room(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
     floor = Column(Integer)
-    noOfOccupants = Column(Integer)
+    no_of_occupants = Column(Integer)
     capacity = Column(Integer)
     type = Column(String(20))
         

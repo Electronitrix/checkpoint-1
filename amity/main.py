@@ -68,8 +68,8 @@ def write_persons(person_objects):
         print "Successfully updated person information to application!"
 
 def create_room(name, floor, room_type):
-    # create room and add to application
-    new_room = amity.createRoom(name.lower(), floor, room_type)
+    # create room and add tso application
+    new_room = amity.create_room(name.lower(), floor, room_type)
     room_objects = []
     # read from room file if it exists
     room_objects = get_rooms_as_list()
@@ -83,7 +83,7 @@ def add_person(first_name, last_name, employee_type, wants_accommodation="N"):
     person_objects = get_persons_as_list()
     # randomly pick an office space to assign person if there is one in 
     # application
-    if room_type_exists("office", amity.officeCapacity):
+    if room_type_exists("office", amity.office_capacity):
         allocated_rooms.append(randomly_allocate_person_a_room(first_name, 
             last_name, employee_type, "office"))
     else:
@@ -91,12 +91,12 @@ def add_person(first_name, last_name, employee_type, wants_accommodation="N"):
     # randomly pick a living space to assign fellow if he wants it
     # and there is one in the application
     if employee_type == "fellow" and wants_accommodation == "Y":
-        if room_type_exists("living space", amity.livingSpaceCapacity):
+        if room_type_exists("living space", amity.living_space_capacity):
             allocated_rooms.append(randomly_allocate_person_a_room(first_name, 
                 last_name, employee_type, "living space"))
         else:
             print "There is no vacant Living Space to currently in database"
-    new_person = amity.addPerson(len(person_objects), first_name.lower(), 
+    new_person = amity.add_person(len(person_objects), first_name.lower(), 
         last_name.lower(), employee_type)
     if allocated_rooms:
         # create person and add rooms to person
@@ -112,9 +112,9 @@ def randomly_allocate_person_a_room(first_name, last_name, employee_type,
     room_type):
     """Randomly allocates a room to a Person and returns assigned room"""
     if room_type == "office":
-        capacity = amity.officeCapacity
+        capacity = amity.office_capacity
     else:
-        capacity = amity.livingSpaceCapacity
+        capacity = amity.living_space_capacity
     
     # open the room file for updates
     if not os.path.isfile('rooms.pkl'):
@@ -125,9 +125,9 @@ def randomly_allocate_person_a_room(first_name, last_name, employee_type,
     random_index = random.randint(0, len(room_objects) - 1)
     searching_for_vacant_room = True
     while searching_for_vacant_room:
-        if room_objects[random_index].noOfOccupants < capacity \
+        if room_objects[random_index].no_of_occupants < capacity \
             and room_objects[random_index].type == room_type:
-            room_objects[random_index].noOfOccupants += 1
+            room_objects[random_index].no_of_occupants += 1
             searching_for_vacant_room = False
         else:
             random_index = random.randint(0, len(room_objects) - 1)
@@ -139,7 +139,7 @@ def room_type_exists(room_type, room_capacity):
     if os.path.isfile('rooms.pkl'):
         room_objects = get_rooms_as_list()
         for room in room_objects:
-            if room.type == room_type and room.noOfOccupants < room_capacity:
+            if room.type == room_type and room.no_of_occupants < room_capacity:
                 return True
     return False
 
@@ -149,7 +149,7 @@ def get_person_identifier(first_name, last_name):
     first_name, last_name = first_name.lower(), last_name.lower()
     found_match = False
     for person in person_objects:
-        if person.firstName == first_name and person.lastName == last_name:
+        if person.first_name == first_name and person.last_name == last_name:
             print "{0} {1}'s identifier: {2}".format(first_name.upper(), \
                 last_name.upper(), person.identifier)
             found_match = True
@@ -203,11 +203,11 @@ def reallocate_person(person_identifier, room_name):
     person_to_reallocate, person_index = get_person(person_identifier)
     # get the new room object and check vacancy
     new_room, new_room_index = get_room(room_name)
-    if new_room.noOfOccupants >= amity.officeCapacity and \
+    if new_room.no_of_occupants >= amity.office_capacity and \
         new_room.type == "office":
         print "FAILURE!!! The room you selected has no vacancy."
         return
-    if new_room.noOfOccupants >= amity.livingSpaceCapacity and \
+    if new_room.no_of_occupants >= amity.living_space_capacity and \
         new_room.type == "living space":
         print "FAILURE!!! The room you selected has no vacancy."
         return
@@ -220,11 +220,11 @@ def reallocate_person(person_identifier, room_name):
             person_to_reallocate.room.append(new_room)
             old_room, old_room_index = get_room(person_to_reallocate.
                 room[room_index].name)
-            room_objects[new_room_index].noOfOccupants += 1
-            room_objects[old_room_index].noOfOccupants -= 1
+            room_objects[new_room_index].no_of_occupants += 1
+            room_objects[old_room_index].no_of_occupants -= 1
             reallocation_successful = True
             print ("{0} Successfully moved from {1} to {2}".format \
-                (person_to_reallocate.firstName, old_room.name, new_room.name))
+                (person_to_reallocate.first_name, old_room.name, new_room.name))
     
     # check that this is not an attempt to allocate living space to staff
     if person_to_reallocate.type == "staff" and new_room.type == "living space":
@@ -234,9 +234,9 @@ def reallocate_person(person_identifier, room_name):
     # before or not allocated at all
     elif not reallocation_successful or room_index is None:
         person_to_reallocate.room.append(new_room)
-        room_objects[new_room_index].noOfOccupants += 1
+        room_objects[new_room_index].no_of_occupants += 1
         print ("{0} Successfully allocated {1} {2}".format \
-                (person_to_reallocate.firstName, new_room.name, new_room.type))    
+                (person_to_reallocate.first_name, new_room.name, new_room.type))    
     
     # apply changes to person_objects
     person_objects = get_persons_as_list()
@@ -273,8 +273,8 @@ def get_allocations_as_dict():
         for room in person.room:
             key = room.name
             allocation_dict[key] = allocation_dict.get(key, []) + \
-                [person.firstName + " " + \
-                person.lastName]
+                [person.first_name + " " + \
+                person.last_name]
     return allocation_dict
 
 def print_allocations(output):
@@ -314,11 +314,11 @@ def find_all_unallocated_persons():
     for person in person_objects:
         found_match = False
         for key, value in allocation_dict.iteritems():
-            if "{0} {1}".format(person.firstName, person.lastName) in value:
+            if "{0} {1}".format(person.first_name, person.last_name) in value:
                 found_match = True
         if not found_match:
-            unallocated_persons.append("{0} {1}".format(person.firstName. \
-                upper(), person.lastName.upper()))
+            unallocated_persons.append("{0} {1}".format(person.first_name. \
+                upper(), person.last_name.upper()))
     return unallocated_persons
 
 def print_unallocated(output):
@@ -401,7 +401,7 @@ def load_state(db_name):
             room_dict[key] = room_dict.get(key, []) + [room]
         room_objects = []
         for key in room_dict:
-            room_dict[key][0].noOfOccupants = len(room_dict[key])
+            room_dict[key][0].no_of_occupants = len(room_dict[key])
             room_objects.append(room_dict[key][0])
         write_rooms(room_objects)
         print "Loaded all rooms from database into application"

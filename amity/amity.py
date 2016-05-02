@@ -5,25 +5,25 @@ from sqlalchemy import Column, Integer, ForeignKey, func
 class Amity(object):
     """Defines the Amity class"""
     
-    officeCapacity = 6
-    livingSpaceCapacity = 4
-    initialNoOfOccupants = 0
+    office_capacity = 6
+    living_space_capacity = 4
+    initial_no_of_occupants = 0
 
-    def createRoom(self, name, floor, roomType):
+    def create_room(self, name, floor, roomType):
 
         if roomType == "living space":
-            newRoom = LivingSpace(name=name, floor=floor, noOfOccupants=
-                self.initialNoOfOccupants, capacity=self.livingSpaceCapacity)
+            new_room = LivingSpace(name=name, floor=floor, no_of_occupants=
+                self.initial_no_of_occupants, capacity=self.living_space_capacity)
         else:
-            newRoom = Office(name=name, floor=floor, noOfOccupants=
-                self.initialNoOfOccupants, capacity=self.officeCapacity)
-        return newRoom
+            new_room = Office(name=name, floor=floor, no_of_occupants=
+                self.initial_no_of_occupants, capacity=self.office_capacity)
+        return new_room
 
-    def addPerson(self, identifier, firstName, lastName, employeeType):
+    def add_person(self, identifier, first_name, last_name, employeeType):
         if employeeType == "staff":
-            newPerson = Staff(identifier=identifier, firstName=firstName, 
-                lastName=lastName)
+            new_person = Staff(identifier=identifier, first_name=first_name, 
+                last_name=last_name)
         else:
-            newPerson = Fellow(identifier=identifier, firstName=firstName, 
-                lastName=lastName)
-        return newPerson
+            new_person = Fellow(identifier=identifier, first_name=first_name, 
+                last_name=last_name)
+        return new_person
