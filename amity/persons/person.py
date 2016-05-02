@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-import os,sys,inspect
+import os, sys, inspect
 from sqlalchemy.orm import relationship, backref
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+currentdir = os.path.dirname(os.path.abspath(inspect. \
+    getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir) 
+sys.path.insert(0, parentdir) 
 
 from base import Base
 from allocation_table import allocation_table
