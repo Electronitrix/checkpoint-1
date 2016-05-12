@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/andela-cdike/checkpoint-1.svg?branch=master)](https://travis-ci.org/andela-cdike/checkpoint-1)
-[![Coverage Status](https://coveralls.io/repos/github/Electronitrix/checkpoint-1/badge.svg?branch=master)](https://coveralls.io/github/Electronitrix/checkpoint-1?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/andela-cdike/checkpoint-1/badge.svg?branch=development)](https://coveralls.io/github/andela-cdike/checkpoint-1?branch=development)
 
 # checkpoint-1 - Room Allocation Software
 
