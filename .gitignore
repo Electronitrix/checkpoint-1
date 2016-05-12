@@ -1,0 +1,30 @@
+*.pyc
+*.py~
+amity/*.pyc
+amity/*.txt
+amity/*.pkl
+amity/persons/*.pyc
+amity/rooms/*.pyc
+test_amity/*.pyc
+
+# Folders
+test_relationship/
+pkls/
+Artefact/
+
+# Unit test / coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+
+# Translations
+*.mo
+*.pot
+
+# Others
+.DS_Store
+.env
