@@ -13,9 +13,10 @@ class Room(Base):
     """Defines attributes and methods for the Room class"""
     __tablename__ = 'room'
     id = Column(Integer, primary_key=True)
+    identifier = Column(Integer)
     name = Column(String(50))
     floor = Column(Integer)
-    no_of_occupants = Column(Integer)
+    no_of_occupants = Column(Integer, default=0)
     capacity = Column(Integer)
     type = Column(String(20))
         

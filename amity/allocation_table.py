@@ -3,7 +3,6 @@ from base import Base
 
 allocation_table = Table('allocation_table',
     Base.metadata,
-    Column('id', Integer, primary_key=True),
-    Column('roomId', Integer, ForeignKey('room.id')),
-    Column('personId', Integer, ForeignKey('person.id'))
+    Column('roomId', Integer, ForeignKey('room.id'), primary_key=True),
+    Column('personId', Integer, ForeignKey('person.id'), primary_key=True)
 )

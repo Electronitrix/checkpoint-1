@@ -16,7 +16,11 @@ class Person(Base):
     identifier = Column(Integer)
     first_name = Column(String(20))
     last_name = Column(String(20))
-    room = relationship("Room", secondary=allocation_table, lazy='subquery')
+    room = relationship(
+        "Room", 
+        secondary=allocation_table, 
+        lazy='subquery'
+    )
     type = Column(String(20))
 
     __mapper_args__ = {

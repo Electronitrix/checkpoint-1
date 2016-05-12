@@ -6,8 +6,3 @@ class Fellow(Person):
     __mapper_args__ = {
         'polymorphic_identity':'fellow'
     }
-    
-
-#Note: both staff and fellows would be assigned office space. but only fellows can  live.
-#Once a fellow is added, he should be assigned an office space and living space if he opts for it
-#Once a staff is added, he should be assigned an office space
