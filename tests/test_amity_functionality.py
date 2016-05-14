@@ -1,66 +1,8 @@
-import unittest, os, sys, inspect
-from sqlalchemy import create_engine
-#from sqlalchemy.orm import relationship, sessionmaker
-currentdir = os.path.dirname(os.path.abspath(inspect. \
-    getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-from amity import base
-from amity import main
-from amity.amity import Amity
-from amity.persons import Person, Fellow, Staff
-from amity.rooms import Room, Office, LivingSpace
+import os
+import unittest
 from context_manager import capture
+from .context import main
 
-engine = create_engine("sqlite:///{0}/amity/test.db".format(parentdir))
-base.Base.metadata.create_all(engine)
-    
-class AmityRoomAllocationClassesTestSuite(unittest.TestCase):
-    """Contains different test cases for the Amity Room Application classes."""
-
-    def setUp(self):
-        self.amity = Amity()
-
-    def test_person_type(self):
-        person = Person(identifier=0, first_name="Erika", last_name="Dike")
-        self.assertTrue((type(person) is Person), msg=
-            "Person object was not Created!!!")
-
-    def test_fellow_type(self):
-        fellow = Fellow(identifier=0, first_name="Erika", last_name="Dike")
-        self.assertTrue((type(fellow) is Fellow), msg=
-            "Fellow object was not Created!!!")
-
-    def test_staff_type(self):
-        staff = Staff(identifier=0, first_name="Erika", last_name="Dike")
-        self.assertTrue((type(staff) is Staff), msg=
-            "Staff object was not Created!!!")
-
-    def test_room_type(self):
-        room = Room(name="Iroko", floor=1, no_of_occupants=0, capacity=0)
-        self.assertTrue((type(room) is Room), msg=
-            "Room object was not Created!!!")
-
-    def test_office_type(self):
-        office = Office(name="Bellows", floor=0, no_of_occupants=0, capacity=6)
-        self.assertTrue((type(office) is Office), msg=
-            "Office object was not Created!!!")
-
-    def test_living_space_type(self):
-        living_space = LivingSpace(name="Iroko", floor=1, no_of_occupants=0, capacity=0)
-        self.assertTrue((type(living_space) is LivingSpace), msg=
-            "Fellow object was not Created!!!")
-
-    def test_amity_object_initializes_correctly(self):
-        self.assertListEqual(
-            [6, 4, 0],
-            [
-                self.amity.office_capacity,
-                self.amity.living_space_capacity,
-                self.amity.no_of_occupants
-            ],
-            msg="Amity object is not initialized with the right values"
-        )
 
 class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
     """Contains different test cases for the Amity Room Application functins."""
@@ -68,11 +10,10 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
     def setUp(self):
         self.rooms_file = "rooms.pkl"
         self.people_file = "people.pkl"
-        self.db_name = parentdir + "/amity/test.db"
         self.people_txt_file = "people.txt"
         self.alloc_txt_file = "alloc.txt"
         self.unalloc_txt_file = "unalloc.txt"
-
+        
     def test_create_room(self):
         main.create_room("Iroko", 1, "living space")
         rooms = main.get_list_of_objects(self.rooms_file)
@@ -188,10 +129,21 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.create_room("bellows", 0, "office")
         main.add_person("erika", "dike", "staff")
         appOutput = ("ERIKA DIKE's identifier: 0\n")
-        with capture(main.print_person_identifier, "erika", "dike") as output:
+        with capture(main.print_person_identifier, "erika", 
+            "dike") as output:
             self.assertEqual(appOutput, output,
                 msg=("get_person_identifier does not print as expected!!! "
                      "{0} != {1}").format(appOutput, output)
+            )
+
+    def test_print_invalid_person_identifier(self):
+        main.add_person("erika", "dike", "staff")
+        appOutput = ("INA DIKE's identifier: No match was found for "
+                     "ina dike.\n")
+        with capture(main.print_person_identifier, "ina", 
+            "dike") as output:
+            self.assertEqual(appOutput, output,
+                msg=("Failure!!! {0} != {1}").format(appOutput, output)
             )
 
     def test_graceful_handling_when_adding_person_and_no_room_exists(self):
@@ -209,7 +161,16 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.reallocate_person(0, "bench hook")
         people = main.get_list_of_objects(self.people_file)
         self.assertEqual("bench hook", people[0].room[0].name,
-            msg="Person is not reallocated!!!"
+            msg="Person was not reallocated!!!"
+        )
+
+    def test_that_reallocate_person_allocates_person_without_room(self):
+        main.add_person("erika", "dike", "staff")
+        main.create_room("bellows", 0, "office")
+        main.reallocate_person(0, "bellows")
+        people = main.get_list_of_objects(self.people_file)
+        self.assertEqual("bellows", people[0].room[0].name,
+            msg="Person was not reallocated!!!"
         )
         
     def test_cannot_reallocate_staff_to_living_space(self):
@@ -217,7 +178,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.add_person("erika", "dike", "staff")
         main.create_room("iroko", 1, "living space")
         appOutput = "FAILURE!!! You cannot allocate 'living space' to staff\n"
-        with capture(main.reallocate_person, 0, "iroko") as output:
+        with capture(main.reallocate_person, 0, "iroko") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg="Staff cannot be reallocated to living space!!! {0} != {1}".format(appOutput, output)
             )
@@ -227,7 +189,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.add_person("erika", "dike", "staff")
         main.create_room("bench hook", 0, "office")
         appOutput = "FAILURE!!! You entered an Invalid Identifier.\n"
-        with capture(main.reallocate_person, 45, "bench hook") as output:
+        with capture(main.reallocate_person, 45, "bench hook") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg="reallocate_person does not detect invalid identifiers!!!"
             )
@@ -240,9 +203,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.add_person("stephen", "oduntan", "fellow", "Y")
         main.add_person("seyi", "adekoya", "fellow", "Y")
         appOutput = "FAILURE!!! The room you selected has no vacancy.\n"
-        # import pdb
-        # pdb.set_trace()
-        with capture(main.reallocate_person, 4, "iroko") as output:
+        with capture(main.reallocate_person, 4, "iroko") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg=("reallocate_person allocates person to filled living "
                      "space!!! {0} != {1}".format(appOutput, output))
@@ -291,7 +253,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
                      "ERIKA DIKE, EZE JANU, SUNDAY NWUGURU, STEPHEN ODUNTAN"
                      "\n\n\n"
                     )
-        with capture(main.print_allocations, "screen") as output:
+        with capture(main.print_allocations, "screen") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg=("print_allocations does not print as expected "
                      "- {0} != {1}!!!".format(appOutput, output))
@@ -299,7 +262,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
 
     def test_print_allocations_when_there_are_no_allocations(self):
         appOutput = "There are no allocations in database\n"
-        with capture(main.print_allocations, "screen") as output:
+        with capture(main.print_allocations, "screen") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg=("print_allocations does not print as expected "
                      "- {0} != {1}!!!".format(appOutput, output))
@@ -335,7 +299,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.add_person("erika", "dike", "fellow", "Y")
         appOutput = ("You must enter a file name with a .txt extension to save"
                      " to file\n")
-        with capture(main.print_allocations, "alloc.pkl") as output:
+        with capture(main.print_allocations, "alloc.pkl") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg=("print_allocations does not detect invalid file "
                      "extensions - {0} != {1}".format(appOutput, output))
@@ -345,7 +310,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.add_person("erika", "dike", "fellow", "Y")
         appOutput = ("LIST OF ALL UNALLOCATED PEOPLE\n\n"
                      "ERIKA DIKE\n\n")
-        with capture(main.print_unallocated, "screen") as output:
+        with capture(main.print_unallocated, "screen") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg=("print_unallocated does not print as expected "
                      "- {0} != {1}!!!".format(appOutput, output))
@@ -367,7 +333,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.add_person("erika", "dike", "fellow", "Y")
         appOutput = ("You must enter a file name with a .txt extension to save"
                      " to file\n")
-        with capture(main.print_unallocated, "unalloc.pkl") as output:
+        with capture(main.print_unallocated, "unalloc.pkl") as \
+            output:
             self.assertEqual(appOutput, output,
                 msg=("print_unallocated does not detect invalid file "
                      "extensions - {0} != {1}".format(appOutput, output))
@@ -396,33 +363,6 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
                      "- {0} != {1}!!!".format(appOutput, output))
             )
             
-    # def test_save_state(self):
-    #     # set up database
-    #     import pdb
-    #     pdb.set_trace()
-    #     # add data to application
-    #     main.create_room("bellows", 0, "office")
-    #     main.add_person("erika", "dike", "fellow", "Y")
-    #     # save state
-    #     main.save_state(self.db_name)
-    #     # query DB
-    #     session = main.setup_database(self.db_name)
-    #     person_objects = session.query(Person).all()
-    #     room_objects = session.query(Room).all()
-    #     self.assertListEqual(
-    #         [
-    #             ["erika", "dike", "fellow"],
-    #             ["bellows", 0, "office"]
-    #         ],
-    #         [
-    #             [person_objects[0].first_name, person_objects[0].last_name, \
-    #                 person_objects[0].type],
-    #             [room_objects[0].name, room_objects[0].floor, \
-    #                 room_objects[0].type]
-    #         ],
-    #         msg=("save_state does not save appropriately!!!")
-    #     )
-
     def tearDown(self):
         if os.path.isfile(self.rooms_file):
             os.remove(self.rooms_file)
@@ -432,10 +372,3 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
             os.remove(self.alloc_txt_file)
         if os.path.isfile(self.unalloc_txt_file):
             os.remove(self.unalloc_txt_file)
-        if os.path.isfile(self.db_name):
-            os.remove(self.db_name)
-        if os.path.isfile(self.people_txt_file):
-            os.remove(self.people_txt_file)
-        
-if __name__ == "__main__":
-    unittest.main()

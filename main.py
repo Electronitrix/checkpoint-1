@@ -255,8 +255,6 @@ def save_state(db_name):
     if os.path.isfile(db_name):
         os.remove(db_name)
     try:
-        import pdb
-        pdb.set_trace()
         session = setup_database(db_name)
         people = get_list_of_objects(people_file)
         rooms = get_list_of_objects(rooms_file)
@@ -268,7 +266,6 @@ def save_state(db_name):
         # delete pickle files
         os.remove(rooms_file)
         os.remove(people_file)
-        
     except:
         print "Error: {0}".format(sys.exc_info()[1])
         session.rollback()
@@ -285,8 +282,6 @@ def setup_database(db_name):
 def load_state(db_name):
     """Loads data from database into application"""
     session = setup_database(db_name)
-    import pdb
-    pdb.set_trace()
     try:
         rooms = load_rooms(db_name, session)
         load_people(db_name, session, rooms)
@@ -325,8 +320,6 @@ def recreate_person(people, rooms):
     """
     processed_people = []
     for person in people:
-        import pdb
-        pdb.set_trace()
         if person.type == "fellow":
             processed_people.append(Fellow(
                                              identifier=person.identifier, 

@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import Table, Column, Integer, ForeignKey, create_engine
 from base import Base
 
 allocation_table = Table('allocation_table',

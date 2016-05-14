@@ -1,17 +1,13 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, create_engine
 from sqlalchemy.orm import relationship, backref
-import os, sys, inspect
-currentdir = os.path.dirname(os.path.abspath(inspect. \
-    getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
-
-from allocation_table import allocation_table
+from os import sys, path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from base import Base
 
 class Room(Base):
     """Defines attributes and methods for the Room class"""
     __tablename__ = 'room'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True)
     identifier = Column(Integer)
     name = Column(String(50))

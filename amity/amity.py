@@ -1,6 +1,11 @@
-from __init__ import Room, LivingSpace, Office, Person, Fellow, Staff
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, ForeignKey, func
+import os, sys, inspect
+from sqlalchemy.orm import relationship, backref
+currentdir = os.path.dirname(os.path.abspath(inspect. \
+    getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+from rooms import Room, LivingSpace, Office 
+from persons import Person, Fellow, Staff
 import random
 
 class Amity(object):
@@ -173,6 +178,7 @@ class Amity(object):
         """
         Searches rooms that person belongs to so only old room
         of same type is removed in place of new room
+        If no old room of the same type exists, a new one is allocated
         Args:
         rooms -- list of all rooms
         room -- room to allocate person
@@ -214,14 +220,6 @@ class Amity(object):
         print "{0} Successfully allocated {1} {2}".format \
             (person.first_name, room.name, room.type)
         return person
-
-    def is_identifier_valid(self, person_identifier, people):
-        "Checks if the person_identifier parameter passed in is valid"
-        if person_identifier < len(people) and person_identifier >= 0:
-            return True
-        else:
-            print "FAILURE!!! You entered an Invalid Identifier."
-            return False
 
     def get_room(self, room_name, rooms):
         """
