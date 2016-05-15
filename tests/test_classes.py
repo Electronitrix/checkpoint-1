@@ -4,9 +4,6 @@ from context import persons, rooms, amity
 class AmityRoomAllocationClassesTestSuite(unittest.TestCase):
     """Contains different test cases for the Amity Room Application classes."""
 
-    def setUp(self):
-        self.amity = amity.Amity()
-
     def test_person_type(self):
         person = persons.Person(
                                   identifier=0, 
@@ -68,12 +65,13 @@ class AmityRoomAllocationClassesTestSuite(unittest.TestCase):
                        )
 
     def test_amity_object_initializes_correctly(self):
+        app = amity.Amity()
         self.assertListEqual(
             [6, 4, 0],
             [
-                self.amity.office_capacity,
-                self.amity.living_space_capacity,
-                self.amity.no_of_occupants
+                app.office_capacity,
+                app.living_space_capacity,
+                app.no_of_occupants
             ],
             msg="Amity object is not initialized with the right values"
         )
