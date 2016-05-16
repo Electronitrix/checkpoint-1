@@ -6,6 +6,24 @@
 # INTRODUCTION
 This is a room allocation software for Andela's Amity campus. It is a command line application that randomly allocates a recently added staff to an office and a recently added fellow to an office and living space if the fellow states that he wants accomodation. The app information is persisted in an sqlite database and must be loaded first before previously saved allocation information can be accessed.
 
+# SET UP
+* Clone the repo and navigate to project directory
+```shell
+$ git clone git@github.com:andela-snwuguru/room-allocation.git
+```
+* Activate virtual environment for project.
+```shell
+$ workon <env-name>
+```
+
+* Install dependecies
+```shell
+$ pip install -r requirements.txt
+```
+* See list of available commands
+```shell
+$ python main.py --help
+```
 
 # FEATURES
 The features of this app are accessed via the command line. The command line is implemented with docopt while the app infomation is stored in pickle until user gives the command to persist the data. Features of this app include:
@@ -43,3 +61,4 @@ Options:
 *  --wants_accommodation=<ans>  Specifies if person wants accommodation or not [default: N]
 *  -o=<file_name>               Specifies a file to print output [default: screen]
 *  --db=sqlite_database         Specifies a database to persist data [default: app.db]
+

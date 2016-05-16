@@ -1,7 +1,7 @@
 *.pyc
 *.py~
-*.txt
 *.pkl
+persons.txt
 amity/*.pyc
 amity/*.txt
 amity/*.pkl
