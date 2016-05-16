@@ -1,7 +1,5 @@
 *.pyc
 *.py~
-*.pkl
-persons.txt
 amity/*.pyc
 amity/*.txt
 amity/*.pkl
@@ -13,7 +11,6 @@ tests/*.pyc
 test_relationship/
 pkls/
 Artefact/
-cover/
 
 # Unit test / coverage reports
 htmlcov/
