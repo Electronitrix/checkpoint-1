@@ -1,41 +1,47 @@
-import os, sys, inspect
-from sqlalchemy.orm import relationship, backref
-currentdir = os.path.dirname(os.path.abspath(inspect. \
-    getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
-from rooms import Room, LivingSpace, Office 
-from persons import Person, Fellow, Staff
+from os import path, sys
 import random
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+from persons.fellow import Fellow
+from persons.person import Person
+from persons.staff import Staff
+from rooms.living_space import LivingSpace 
+from rooms.office import Office 
+from rooms.room import Room
+
 
 class Amity(object):
     """Defines the Amity class"""
-    
+
     def __init__(self, office_capacity=6, living_space_capacity=4,
-        no_of_occupants = 0):
+                 no_of_occupants=0):
         self.office_capacity = office_capacity
         self.living_space_capacity = living_space_capacity
         self.no_of_occupants = no_of_occupants
-        
+
     def create_room(self, identifier, name, floor, room_type):
         """Create room object and return"""
         if room_type == "office":
             new_room = Office(
-                                identifier=identifier, 
-                                name=name, 
-                                floor=floor,
-                                no_of_occupants = self.no_of_occupants,
-                                capacity=self.office_capacity
-                             )
+                identifier=identifier, name=name, floor=floor,
+                no_of_occupants=self.no_of_occupants,
+                capacity=self.office_capacity
+            )
         else:
             new_room = LivingSpace(
-                                    identifier=identifier, 
-                                    name=name, 
-                                    floor=floor,
-                                    no_of_occupants = self.no_of_occupants,
-                                    capacity=self.living_space_capacity
-                                  )
+                identifier=identifier, name=name, floor=floor,
+                no_of_occupants=self.no_of_occupants,
+                capacity=self.living_space_capacity
+            )
         return new_room
+
+    def add_person(self, identifier, first_name, last_name, employeeType,
+                   wants_accommodation, rooms):
+        """Create Person object"""
+        new_person = Person.create_person(
+            identifier=identifier, first_name=first_name, last_name=last_name,
+            employeeType
+        )
 
     def create_person(self, identifier, first_name, last_name, employeeType, 
             wants_accommodation, rooms):
@@ -57,11 +63,11 @@ class Amity(object):
         Both staff and fellow are assigned office spaces
         Only fellow who indicates interest is assigned living space
         Args:
-        person -- the person of interest
-        wants_accommodation -- indicates if person wants accommodation or not
-        rooms -- list of all created rooms
+            person -- the person of interest
+            wants_accommodation -- indicates if person wants accommodation or not
+            rooms -- list of all created rooms
         Returns:
-        a call to add_persons_to_room method 
+            a call to add_persons_to_room method 
         """
         allocated_space  = []
         if self.check_room_type_has_vacancy(rooms, "office"):
@@ -76,11 +82,11 @@ class Amity(object):
     def check_room_type_has_vacancy(self, rooms, room_type):
         """
         Args:
-        rooms -- all rooms in database
-        room_type -- the room type of interest
+            rooms -- all rooms in database
+            room_type -- the room type of interest
         Returns:
-        True -- if there is a vacant room of a particular type. 
-        False -- if there is none
+            True -- if there is a vacant room of a particular type. 
+            False -- if there is none
         """
         for room in rooms:
             if self.check_that_room_is_vacant(room, room_type):
@@ -92,13 +98,13 @@ class Amity(object):
     def add_person_to_rooms(self, person, rooms):
         """Update Person rooms column with the new rooms assigned
         Args:
-        person -- the person of interest
-        rooms -- the rooms we want to allocate to person
+            person -- the person of interest
+            rooms -- the rooms we want to allocate to person
         Returns:
-        person -- the updated person object reflecting the allocation
+            person -- the updated person object reflecting the allocation
         """
         for room in rooms:
-            person.room.append(room)
+            person.rooms.append(room)
             print "{0} {1} was assigned {2} {3}.".format(person.first_name, 
                 person.last_name, room.name.capitalize(), room.type)
         return person
@@ -107,14 +113,15 @@ class Amity(object):
         """
         Randomly pick an office or living space based on supplied argument
         Args:
-        rooms -- all rooms in database
-        room_type -- the room type of interest
+            rooms -- all rooms in database
+            room_type -- the room type of interest
         Returns:
-        room -- a randomly selected room
+            room -- a randomly selected room
         """
         last_room_index = len(rooms) - 1
         random_index = random.randint(0, last_room_index)
         searching_for_vacant_room = True
+        
         while searching_for_vacant_room:
             if self.check_that_room_is_vacant(rooms[random_index], room_type):
                 self.increment_number_of_occupants(rooms, random_index)
@@ -126,9 +133,9 @@ class Amity(object):
     def increment_number_of_occupants(self, rooms, room_index):
         """ Increases the number of occupants in room by one
         Args:
-        room -- room to be updated
+            room -- room to be updated
         Returns:
-        updated room object
+            updated room object
         """
         rooms[room_index].no_of_occupants += 1
 
@@ -136,29 +143,28 @@ class Amity(object):
         """
         Returns true if this room is vacant and of a particular type
         Args:
-        room -- the room to check
-        room_type -- the room type of interest
+            room -- the room to check
+            room_type -- the room type of interest
         Returns:
-        True -- if room is vacant
-        False -- if room is full
+            True -- if room is vacant
+            False -- if room is full
         """
-        if room.type == room_type and room.no_of_occupants < room.capacity:
-            return True
-        else:
-            return False
-
+        return room.type == room_type and room.no_of_occupants < room.capacity
+        
     def reallocate_person(self, person_identifier, room_name, people, rooms):
         """
         Transfer person with the supplied person identifier to a different room
         Also performs fresh allocations if person has not been allocated a room
         of this type.
         Args:
-        person_identifier -- an identifier that recognizes person
-        room_name -- name of new room
-        people -- list of person objects
-        rooms -- list of room objects
+            person_identifier -- an identifier that recognizes person
+            room_name -- name of new room
+            people -- list of person objects
+            rooms -- list of room objects
         Returns a list containing person
         """
+        import pdb
+        pdb.set_trace()
         new_room = self.get_room(room_name, rooms)
         person = self.get_person(person_identifier, people)
         if not new_room:
@@ -180,14 +186,14 @@ class Amity(object):
         of same type is removed in place of new room
         If no old room of the same type exists, a new one is allocated
         Args:
-        rooms -- list of all rooms
-        room -- room to allocate person
-        person -- person to be allocated
+            rooms -- list of all rooms
+            room -- room to allocate person
+            person -- person to be allocated
         Returns:
-        person object
+            person object
         """
-        for room_index in range(len(person.room)):
-            if person.room[room_index].type == new_room.type:
+        for room_index in range(len(person.rooms)):
+            if person.rooms[room_index].type == new_room.type:
                 return self.exchange_old_room_for_new(rooms, new_room, room_index, 
                     person)
         return self.append_room_to_person(person, new_room, rooms)
@@ -196,15 +202,17 @@ class Amity(object):
         """
         Replaces the old room for new
         Args:
-        rooms -- list of all rooms
-        new_room -- room to allocate person
-        room_index -- position of new_
+            rooms -- list of all rooms
+            new_room -- room to allocate person
+            room_index -- position of new_
         Returns:
-        person object
+            person object
         """
-        old_room_name = person.room.pop(room_index).name
-        person.room.append(new_room)
+        old_room_name = person.rooms.pop(room_index).name
+        person.rooms.append(new_room)
         old_room = self.get_room(old_room_name, rooms)
+        import pdb
+        pdb.set_trace()
         self.increment_number_of_occupants(rooms, old_room.identifier)
         self.decrement_number_of_occupants(rooms, new_room.identifier)
         print ("{0} Successfully moved from {1} to {2}".format \
@@ -247,9 +255,9 @@ class Amity(object):
     def decrement_number_of_occupants(self, rooms, room_index):
         """Decreases number of occupants in room by one
         Args:
-        room -- room to be updated
+            room -- room to be updated
         Returns:
-        updated room object
+            updated room object
         """
         rooms[room_index].no_of_occupants -= 1
         

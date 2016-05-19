@@ -1,13 +1,12 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, create_engine
-import os, sys, inspect
-from sqlalchemy.orm import relationship, backref
-currentdir = os.path.dirname(os.path.abspath(inspect. \
-    getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
+from os import sys, path
 
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from base import Base
 from allocation_table import allocation_table
+
 
 class Person(Base):
     """Defines attributes and methods for the Person class"""
@@ -16,14 +15,14 @@ class Person(Base):
     identifier = Column(Integer)
     first_name = Column(String(20))
     last_name = Column(String(20))
-    room = relationship(
-        "Room", 
-        secondary=allocation_table, 
-        lazy='subquery'
+    rooms = relationship(
+        "Room", secondary=allocation_table, lazy='subquery'
     )
     type = Column(String(20))
 
     __mapper_args__ = {
-        'polymorphic_on':type,
-        'polymorphic_identity':'person'
+        'polymorphic_on': type,
+        'polymorphic_identity': 'person'
     }
+
+    def create_person()

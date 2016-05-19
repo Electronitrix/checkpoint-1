@@ -1,8 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, create_engine
-from sqlalchemy.orm import relationship, backref
 from os import sys, path
+
+from sqlalchemy import Column, Integer, String
+
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from base import Base
+
 
 class Room(Base):
     """Defines attributes and methods for the Room class"""
@@ -15,8 +17,8 @@ class Room(Base):
     no_of_occupants = Column(Integer, default=0)
     capacity = Column(Integer)
     type = Column(String(20))
-        
+
     __mapper_args__ = {
-        'polymorphic_on':type,
-        'polymorphic_identity':'room'
+        'polymorphic_on': type,
+        'polymorphic_identity': 'room'
     }
