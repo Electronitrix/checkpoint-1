@@ -292,8 +292,8 @@ def load_state(db_name):
     """Loads data from database into application"""
     session = setup_database(db_name)
     try:
-        rooms = load_rooms_from_db(db_name, session)
-        load_people_from_db(db_name, session, rooms)
+        rooms = load_rooms_from_db(session)
+        load_people_from_db(session, rooms)
     except:
         print "Error: {0}".format(sys.exc_info()[1])
         session.rollback()
@@ -301,7 +301,7 @@ def load_state(db_name):
         session.close()
 
 
-def load_rooms_from_db(db_name, session):
+def load_rooms_from_db(session):
     """load rooms from database to memory"""
     number_of_rooms = session.query(Room).group_by(Room.mem_id).count()
     rooms = session.query(Room).filter(Room.id <= number_of_rooms).all()
@@ -314,7 +314,7 @@ def load_rooms_from_db(db_name, session):
     return rooms
 
 
-def load_people_from_db(db_name, session, rooms):
+def load_people_from_db(session, rooms):
     """load people from database to memory"""
     people = session.query(Person).all()
     people = recreate_person(people, rooms)
