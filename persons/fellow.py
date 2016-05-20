@@ -1,7 +1,6 @@
-from person import Person
+import person
 
-
-class Fellow(Person):
+class Fellow(person.Person):
     """Defines the Fellow class"""
 
     __mapper_args__ = {

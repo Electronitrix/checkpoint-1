@@ -5,54 +5,54 @@ class AmityRoomAllocationClassesTestSuite(unittest.TestCase):
     """Contains different test cases for the Amity Room Application classes."""
 
     def test_person_type(self):
-        person = persons.Person(
-                                  identifier=0, 
+        person = persons.person.Person(
+                                  mem_id=0, 
                                   first_name="Erika", 
                                   last_name="Dike"
                                )
-        self.assertTrue((type(person) is persons.Person), msg=
+        self.assertTrue((type(person) is persons.person.Person), msg=
             "Person object was not Created!!!")
 
     def test_fellow_type(self):
-        fellow = persons.Fellow(
-                                  identifier=0, 
+        fellow = persons.fellow.Fellow(
+                                  mem_id=0, 
                                   first_name="Erika", 
                                   last_name="Dike"
                                )
-        self.assertTrue((type(fellow) is persons.Fellow), msg=
+        self.assertTrue((type(fellow) is persons.fellow.Fellow), msg=
             "Fellow object was not Created!!!")
 
     def test_staff_type(self):
-        staff = persons.Staff(
-                                identifier=0, 
+        staff = persons.staff.Staff(
+                                mem_id=0, 
                                 first_name="Erika", 
                                 last_name="Dike"
                              )
-        self.assertTrue((type(staff) is persons.Staff), msg=
+        self.assertTrue((type(staff) is persons.staff.Staff), msg=
             "Staff object was not Created!!!")
 
     def test_room_type(self):
-        room = rooms.Room(
+        room = rooms.room.Room(
                             name="Iroko", 
                             floor=1, 
                             no_of_occupants=0, 
                             capacity=0
                          )
-        self.assertTrue((type(room) is rooms.Room), msg=
+        self.assertTrue((type(room) is rooms.room.Room), msg=
             "Room object was not Created!!!")
 
     def test_office_type(self):
-        office = rooms.Office(
+        office = rooms.office.Office(
                                 name="Bellows", 
                                 floor=0, 
                                 no_of_occupants=0, 
                                 capacity=6
                              )
-        self.assertTrue((type(office) is rooms.Office), msg=
+        self.assertTrue((type(office) is rooms.office.Office), msg=
             "Office object was not Created!!!")
 
     def test_living_space_type(self):
-        living_space = rooms.LivingSpace(
+        living_space = rooms.living_space.LivingSpace(
                                            name="Iroko", 
                                            floor=1, 
                                            no_of_occupants=0, 
@@ -60,12 +60,12 @@ class AmityRoomAllocationClassesTestSuite(unittest.TestCase):
                                         )
         self.assertTrue(
                           (type(living_space) is 
-                          rooms.LivingSpace), 
+                          rooms.living_space.LivingSpace), 
                           msg="Fellow object was not Created!!!"
                        )
 
     def test_amity_object_initializes_correctly(self):
-        app = amity.Amity()
+        app = amity.amity.Amity()
         self.assertListEqual(
             [6, 4, 0],
             [

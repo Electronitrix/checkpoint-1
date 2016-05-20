@@ -23,6 +23,7 @@ Options:
 import pickle
 import os.path
 import sys
+import textwrap
 
 from docopt import docopt
 from sqlalchemy import create_engine
@@ -69,7 +70,7 @@ def create_room(name, floor, room_type):
         new_room = amity.create_room(len(rooms), name.lower(),
                                      floor, room_type)
         add_room_to_application(rooms, new_room)
-        print "You have successfully created room - {0}".format(name)
+        print "You have successfully created room - {0}".format(name.upper())
     else:
         print "Failure!!! You entered an Invalid room type."
 
@@ -90,43 +91,46 @@ def add_room_to_application(rooms, new_room):
 
 def add_person(first_name, last_name, employee_type, wants_accommodation="N"):
     """Add the person and automatically allocate a room"""
-    rooms_list = get_list_of_objects(rooms_file)
-    people_list = get_list_of_objects(people_file)
-    new_person = amity.create_person(len(people_list),
-                                     first_name.lower(),
-                                     last_name.lower(),
-                                     employee_type,
-                                     wants_accommodation,
-                                     rooms_list)
-    if new_person:
-        people_list.append(new_person)
-        write_to_pickle(people_list, people_file)
-        write_to_pickle(rooms_list, rooms_file)
+    try:
+        rooms = get_list_of_objects(rooms_file)
+        people = get_list_of_objects(people_file)
+        new_person, errors = amity.add_person(len(people),
+                                              first_name.lower(),
+                                              last_name.lower(),
+                                              employee_type,
+                                              wants_accommodation,
+                                              rooms)
+        for error in errors:
+            print "{} Please create a new room of this type.".format(error)
+        if new_person:
+            print "\n".join(
+                ["{} was allocated {}.".format(str(new_person).
+                 upper(), str(room).capitalize())
+                 for room in new_person.rooms]
+            )
+            people.append(new_person)
+            write_to_pickle(people, people_file)
+            write_to_pickle(rooms, rooms_file)
+
+    except ValueError as error:
+        print error[0]
 
 
-def print_person_identifier(first_name, last_name):
+def print_person_id(first_name, last_name):
     """Print an identifier used to locate a specific person"""
     people = get_list_of_objects(people_file)
     first_name, last_name = first_name.lower(), last_name.lower()
-    identifier = search_for_person_identifier(first_name, last_name, people)
-    print "{0} {1}'s identifier: {2}".format(first_name.upper(),
-                                             last_name.upper(), identifier)
+    try:
+        id = amity.get_person_id(first_name, last_name,
+                                 people)
+        print "{0} {1}'s identifier: {2}".format(
+            first_name.upper(), last_name.upper(), id)
+
+    except ValueError as error:
+        print error[0]
 
 
-def search_for_person_identifier(first_name, last_name, people):
-    """Searches for person identifier
-    Returns:
-    Person's identifier or failure message
-    """
-    found_match = False
-    for person in people:
-        if first_name == person.first_name and last_name == person.last_name:
-            return person.identifier
-    if not found_match:
-        return "No match was found for {0} {1}.".format(first_name, last_name)
-
-
-def reallocate_person(person_identifier, room_name):
+def reallocate_person(person_id, room_name):
     """
     Transfer given person to a different room or perform fresh allocation
     if the person had not been allocated a room.
@@ -135,12 +139,19 @@ def reallocate_person(person_identifier, room_name):
     """
     people = get_list_of_objects(people_file)
     rooms = get_list_of_objects(rooms_file)
-    person = amity.reallocate_person(
-        person_identifier, room_name.lower(), people, rooms)
-    if person:
-        people[person_identifier] = person
-        write_to_pickle(people, people_file)
-        write_to_pickle(rooms, rooms_file)
+    try:
+        person = amity.reallocate_person(
+            person_id, room_name.lower(), people, rooms)
+        if person:
+            people[person_id] = person
+            write_to_pickle(people, people_file)
+            write_to_pickle(rooms, rooms_file)
+            print("Successfully allocated {} the {}.".
+                  format(person, person.rooms[-1]))
+    except ValueError as error:
+        print error[0]
+    except RuntimeError as error:
+        print error[0]
 
 
 def loads_people(text_file):
@@ -150,12 +161,13 @@ def loads_people(text_file):
     people = data.split("\n")
     for each in people:
         person = each.split()
+        # import pdb; pdb.set_trace()
         if len(person) == 4:
             add_person(person[0].lower(), person[1].lower(),
                        person[2].lower(), person[3])
         elif len(person) == 3:
             add_person(person[0].lower(), person[1].lower(),
-                       person[2].lower(), "N")
+                       person[2].lower())
         else:
             person_string = " ".join(person)
             print "{0} is in an invalid format and cannot be added" \
@@ -167,11 +179,13 @@ def print_allocations(output):
     Prints to a text file if that is provided.
     """
     people = get_list_of_objects(people_file)
-    allocation_dict = get_allocations_as_dict(people)
+    rooms = get_list_of_objects(rooms_file)
+    allocation_dict = amity.get_allocations_as_dict(people, rooms)
     if not allocation_dict:
         print ("There are no allocations in memory. You can either enter "
                "new data or load data from database")
         return
+
     allocation_list = prepare_allocations_output(allocation_dict)
     if output == "screen":
         print "".join(allocation_list)
@@ -185,18 +199,23 @@ def print_allocations(output):
 def prepare_allocations_output(allocations):
     """Prepare the allocations to be displayed to user
     Args:
-    allocations -- a dictionary containing room name as key and person
-                   name as value
+        allocations -- a dictionary containing room name as key and person
+                       name as value
     Returns:
-    output -- a list of allocations
+        output -- a list of allocations
     """
     output = []
+    line_width = 51
     for key in allocations:
-        output.append(key.upper() + "\n")
-        output.append("-------------------------------------------\n")
+        temp = []
+        temp.append(key.upper() + "\n")
+        temp.append("-" * line_width)
+        temp.append("\n")
         for person in allocations[key]:
-            output.append(person.upper() + ", ")
-        output[-1] = output[-1][:-2]
+            temp.append(person.upper() + ", ")
+        temp[-1] = temp[-1][:-2]
+        room_info = textwrap.fill("".join(temp), line_width)
+        output.append(room_info)
         output.append("\n\n")
     return output
 
@@ -210,7 +229,7 @@ def write_to_txt(allocations, output):
 def print_unallocated(output):
     """Prints all Persons that have not been allocated a room"""
     people = get_list_of_objects(people_file)
-    unallocated_persons = find_all_unallocated_persons(people)
+    unallocated_persons = amity.get_unallocated_people(people)
     output_message = ["LIST OF ALL UNALLOCATED PEOPLE\n\n"]
     for person in unallocated_persons:
         output_message.append(person)
@@ -224,28 +243,10 @@ def print_unallocated(output):
                " to file")
 
 
-def find_all_unallocated_persons(people):
-    """
-    Searches the database for all persons that have not been assigned
-    a room.
-    """
-    allocation_dict = get_allocations_as_dict(people)
-    unallocated_persons = []
-    for person in people:
-        found_match = False
-        for key, value in allocation_dict.iteritems():
-            if "{0} {1}".format(person.first_name, person.last_name) in value:
-                found_match = True
-        if not found_match:
-            unallocated_persons.append("{0} {1}".format(person.first_name.
-                                       upper(), person.last_name.upper()))
-    return unallocated_persons
-
-
 def print_room(room_name):
     """Prints names of occupants in a room"""
     people = get_list_of_objects(people_file)
-    allocation_dict = get_allocations_as_dict(people)
+    allocation_dict = amity.get_allocations_as_dict(people)
     print "NAMES OF PEOPLE IN {0}\n".format(room_name.upper())
     try:
         for person_name in allocation_dict[room_name]:
@@ -253,17 +254,6 @@ def print_room(room_name):
         print "\n"
     except KeyError:
         print "There is no one in this Room!!!\n"
-
-
-def get_allocations_as_dict(people):
-    """Get allocation table from pkl file and return as dictionary"""
-    allocation_dict = {}
-    for person in people:
-        for room in person.rooms:
-            key = room.name
-            allocation_dict[key] = allocation_dict.get(key, []) + \
-                [person.first_name + " " + person.last_name]
-    return allocation_dict
 
 
 def save_state(db_name):
@@ -275,8 +265,8 @@ def save_state(db_name):
         session = setup_database(db_name)
         people = get_list_of_objects(people_file)
         rooms = get_list_of_objects(rooms_file)
-        session.add_all(people)
         session.add_all(rooms)
+        session.add_all(people)
         session.commit()
         print "Successfully Stored application data in database"
 
@@ -302,8 +292,8 @@ def load_state(db_name):
     """Loads data from database into application"""
     session = setup_database(db_name)
     try:
-        rooms = load_rooms(db_name, session)
-        load_people(db_name, session, rooms)
+        rooms = load_rooms_from_db(db_name, session)
+        load_people_from_db(db_name, session, rooms)
     except:
         print "Error: {0}".format(sys.exc_info()[1])
         session.rollback()
@@ -311,9 +301,9 @@ def load_state(db_name):
         session.close()
 
 
-def load_rooms(db_name, session):
-    """load rooms from database to pickle"""
-    number_of_rooms = session.query(Room).group_by(Room.identifier).count()
+def load_rooms_from_db(db_name, session):
+    """load rooms from database to memory"""
+    number_of_rooms = session.query(Room).group_by(Room.mem_id).count()
     rooms = session.query(Room).filter(Room.id <= number_of_rooms).all()
     rooms = recreate_room(rooms)
     if rooms:
@@ -324,8 +314,8 @@ def load_rooms(db_name, session):
     return rooms
 
 
-def load_people(db_name, session, rooms):
-    """load rooms from database"""
+def load_people_from_db(db_name, session, rooms):
+    """load people from database to memory"""
     people = session.query(Person).all()
     people = recreate_person(people, rooms)
     if people:
@@ -344,13 +334,13 @@ def recreate_person(people, rooms):
     for person in people:
         if person.type == "fellow":
             processed_people.append(Fellow(
-                                    identifier=person.identifier,
+                                    mem_id=person.mem_id,
                                     first_name=person.first_name,
                                     last_name=person.last_name,
                                     ))
         else:
             processed_people.append(Staff(
-                                    identifier=person.identifier,
+                                    mem_id=person.mem_id,
                                     first_name=person.first_name,
                                     last_name=person.last_name,
                                     ))
@@ -363,7 +353,7 @@ def repopulate_rooms(person, people, rooms):
     Do a reallocation of rooms to person
     """
     for room in person.rooms:
-        amity.reallocate_person(person.identifier, room.name, people, rooms)
+        amity.reallocate_person(person.mem_id, room.name, people, rooms)
 
 
 def recreate_room(rooms):
@@ -375,7 +365,7 @@ def recreate_room(rooms):
     for room in rooms:
         if room.type == "office":
             processed_rooms.append(Office(
-                                   identifier=room.identifier,
+                                   mem_id=room.mem_id,
                                    name=room.name,
                                    floor=room.floor,
                                    no_of_occupants=0,
@@ -383,7 +373,7 @@ def recreate_room(rooms):
                                    ))
         else:
             processed_rooms.append(LivingSpace(
-                                   identifier=room.identifier,
+                                   mem_id=room.mem_id,
                                    name=room.name,
                                    floor=room.floor,
                                    no_of_occupants=0,
@@ -405,7 +395,7 @@ if __name__ == '__main__':
                    arguments['--wants_accommodation']
                    )
     elif arguments['print_person_identifier']:
-        print_person_identifier(arguments['<first_name>'],
+        print_person_id(arguments['<first_name>'],
                                 arguments['<last_name>'])
     elif arguments['reallocate_person']:
         reallocate_person(int(arguments['<person_identifier>']),

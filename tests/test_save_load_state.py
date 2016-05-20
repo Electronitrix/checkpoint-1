@@ -1,7 +1,7 @@
 import os
 import unittest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from .context import main, persons, rooms
 
@@ -23,14 +23,18 @@ class RoomAllocationSaveLoadStateTestSuite(unittest.TestCase):
     def tearDown(self):
         if os.path.isfile(self.db_name):
             os.remove(self.db_name)
+        if os.path.isfile(self.rooms_file):
+            os.remove(self.rooms_file)
+        if os.path.isfile(self.people_file):
+            os.remove(self.people_file)
 
     def test_save_state(self):
         main.create_room("bellows", 0, "office")
-        main.add_person("erika", "dike", "fellow", "Y")
+        main.add_person("erika", "dike", "fellow")
         main.save_state(self.db_name)
         # query DB
-        person = self.session.query(persons.Person).first()
-        room = self.session.query(rooms.Room).first()
+        person = self.session.query(persons.person.Person).first()
+        room = self.session.query(rooms.room.Room).first()
         self.assertListEqual(
             [
                 ["erika", "dike", "fellow"],
@@ -45,7 +49,7 @@ class RoomAllocationSaveLoadStateTestSuite(unittest.TestCase):
 
     def test_load_state(self):
         main.create_room("bellows", 0, "office")
-        main.add_person("erika", "dike", "fellow", "Y")
+        main.add_person("erika", "dike", "fellow")
         main.save_state(self.db_name)
         main.load_state(self.db_name)
         room = main.get_list_of_objects(self.rooms_file)[-1]
