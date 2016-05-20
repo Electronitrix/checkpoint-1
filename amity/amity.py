@@ -105,8 +105,10 @@ class Amity(object):
         room.increment_number_of_occupants(rooms, new_room.mem_id)
         return person
 
-    def get_allocations_as_dict(self, people, rooms=[]):
+    def get_allocations_as_dict(self, people, rooms=None):
         """Get allocation table from pkl file and return as dictionary"""
+        if rooms is None:
+            rooms = []
         person = Person()
         room = Room()
         allocations = person.get_allocations(people)
