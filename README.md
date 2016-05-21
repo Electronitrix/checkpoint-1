@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/andela-cdike/checkpoint-1.svg?branch=development)](https://travis-ci.org/andela-cdike/checkpoint-1)
 [![Coverage Status](https://coveralls.io/repos/github/andela-cdike/checkpoint-1/badge.svg?branch=development)](https://coveralls.io/github/andela-cdike/checkpoint-1?branch=development)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/andela-cdike/checkpoint-1/badges/quality-score.png?b=development)](https://scrutinizer-ci.com/g/andela-cdike/checkpoint-1/?branch=development)
 
 # checkpoint-1 - Room Allocation Software
 
