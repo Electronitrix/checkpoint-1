@@ -15,17 +15,20 @@ class Amity(object):
 
     def __init__(self, office_capacity=6, living_space_capacity=4,
                  no_of_occupants=0):
-        self.office_capacity = office_capacity
-        self.living_space_capacity = living_space_capacity
+        self.capacity = {"office": office_capacity,
+                         "living space": living_space_capacity}
         self.no_of_occupants = no_of_occupants
 
     def create_room(self, mem_id, name, floor, room_type):
         """Create room object and return"""
-        room = Room()
-        new_room = room.create_room(mem_id, name, floor, room_type)
+        new_room = Room.create_room(
+            mem_id, name, floor, room_type, self.capacity,
+            self.no_of_occupants
+        )
         return new_room
 
-    def add_person(self, mem_id, first_name, last_name, employee_type,
+    @staticmethod
+    def add_person(mem_id, first_name, last_name, employee_type,
                    wants_accommodation, rooms):
         """Adds new person to room
         Args:
@@ -64,15 +67,16 @@ class Amity(object):
         new_person = new_person.add_rooms_to_person(allocated_rooms)
         return new_person, errors
 
-    def get_person_id(self, first_name, last_name, people):
+    @staticmethod
+    def get_person_id(first_name, last_name, people):
         """Searches for person identifier
         Returns:
         Person's identifier or failure message
         """
-        person = Person()
-        return person.get_person_id(first_name, last_name, people)
+        return Person.get_person_id(first_name, last_name, people)
 
-    def reallocate_person(self, person_id, room_name, people, rooms):
+    @staticmethod
+    def reallocate_person(person_id, room_name, people, rooms):
         """
         Transfer person with the supplied person identifier to a different room
         Also performs fresh allocations if person has not been allocated a room
@@ -105,14 +109,13 @@ class Amity(object):
         room.increment_number_of_occupants(rooms, new_room.mem_id)
         return person
 
-    def get_allocations_as_dict(self, people, rooms=None):
+    @staticmethod
+    def get_allocations_as_dict(people, rooms=None):
         """Get allocation table from pkl file and return as dictionary"""
         if rooms is None:
             rooms = []
-        person = Person()
-        room = Room()
-        allocations = person.get_allocations(people)
-        allocations = room.add_empty_rooms_to_allocation(rooms, allocations)
+        allocations = Person.get_allocations(people)
+        allocations = Room.add_empty_rooms_to_allocation(rooms, allocations)
         return allocations
 
     def get_unallocated_people(self, people):
@@ -120,6 +123,5 @@ class Amity(object):
         Searches memory for all persons that have not been assigned
         a room.
         """
-        person = Person()
         allocations = self.get_allocations_as_dict(people)
-        return person.get_unallocated(people, allocations)
+        return Person.get_unallocated(people, allocations)

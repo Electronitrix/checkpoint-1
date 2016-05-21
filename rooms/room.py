@@ -24,7 +24,9 @@ class Room(Base):
         'polymorphic_identity': 'room'
     }
 
-    def create_room(self, mem_id, name, floor, room_type):
+    @staticmethod
+    def create_room(mem_id, name, floor, room_type, capacity,
+                    no_of_occupants):
         """Create room object and return"""
         # I imported here to avoid cyclic imports
         import living_space
@@ -32,14 +34,14 @@ class Room(Base):
         if room_type == "office":
             new_room = office.Office(
                 mem_id=mem_id, name=name, floor=floor,
-                no_of_occupants=0,
-                capacity=6
+                no_of_occupants=no_of_occupants,
+                capacity=capacity["office"]
             )
         elif room_type == "living space":
             new_room = living_space.LivingSpace(
                 mem_id=mem_id, name=name, floor=floor,
-                no_of_occupants=0,
-                capacity=4
+                no_of_occupants=no_of_occupants,
+                capacity=capacity["living space"]
             )
         else:
             raise ValueError("Invalid Room Type!!! Room is either an "
@@ -64,7 +66,8 @@ class Room(Base):
                 self.increment_number_of_occupants(rooms, index)
                 return rooms[index]
 
-    def check_that_room_is_vacant(self, room, room_type):
+    @staticmethod
+    def check_that_room_is_vacant(room, room_type):
         """
         Returns true if this room is vacant and of a particular type
         Args:
@@ -76,7 +79,8 @@ class Room(Base):
         """
         return room.type == room_type and room.no_of_occupants < room.capacity
 
-    def increment_number_of_occupants(self, rooms, room_index):
+    @staticmethod
+    def increment_number_of_occupants(rooms, room_index):
         """ Increases the number of occupants in room by one
         Args:
             room -- room to be updated
@@ -117,7 +121,8 @@ class Room(Base):
                 self.decrement_number_of_occupants(rooms, room.mem_id)
         return person
 
-    def decrement_number_of_occupants(self, rooms, room_index):
+    @staticmethod
+    def decrement_number_of_occupants(rooms, room_index):
         """Decreases number of occupants in room by one
         Args:
             room -- room to be updated
@@ -143,7 +148,8 @@ class Room(Base):
                 return room
         return None
 
-    def add_empty_rooms_to_allocation(self, rooms, allocations):
+    @staticmethod
+    def add_empty_rooms_to_allocation(rooms, allocations):
         """Returns all rooms that have no allocation
         Args:
             rooms -- list of all rooms

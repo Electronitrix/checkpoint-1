@@ -25,7 +25,8 @@ class Person(Base):
         'polymorphic_identity': 'person'
     }
 
-    def create_person(self, mem_id, first_name, last_name, employee_type):
+    @staticmethod
+    def create_person(mem_id, first_name, last_name, employee_type):
         """Create fellow or staff object"""
         # I imported here to avoid cyclic imports
         import fellow
@@ -54,7 +55,8 @@ class Person(Base):
             self.rooms.append(room)
         return self
 
-    def get_person_id(self, first_name, last_name, people):
+    @staticmethod
+    def get_person_id(first_name, last_name, people):
         """Return person's identifier"""
         for person in people:
             if (first_name == person.first_name and last_name ==
@@ -63,7 +65,8 @@ class Person(Base):
 
         raise ValueError("No identifier was found for the name supplied")
 
-    def get_person(self, mem_id, people):
+    @staticmethod
+    def get_person(mem_id, people):
         """
         Looks for a person based on supplied id
         Args:
@@ -78,7 +81,8 @@ class Person(Base):
                 return person
         return None
 
-    def get_allocations(self, people):
+    @staticmethod
+    def get_allocations(people):
         """
         Return all allocations in memory
         Args:
@@ -94,7 +98,8 @@ class Person(Base):
                     [person.first_name + " " + person.last_name]
         return allocations
 
-    def get_unallocated(self, people, allocations):
+    @staticmethod
+    def get_unallocated(people, allocations):
         """
         Return all those who have not been allocated rooms
         """

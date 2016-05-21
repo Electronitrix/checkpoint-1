@@ -386,17 +386,17 @@ if __name__ == '__main__':
 
     # if an argument called hello was passed, execute the hello logic.
     if arguments['create_room']:
-        for i in range(len(arguments['<name>'])):
-            create_room(arguments['<name>'][i], int(arguments['<floor>'][i]),
-                        arguments['<room_type>'][i])
+        for i, (room, floor, type) in enumerate(
+            zip(arguments['<name>'], arguments['<floor>'],
+                arguments['<room_type>'])):
+            create_room(room, int(floor), type)
     elif arguments['add_person']:
         add_person(arguments['<first_name>'], arguments['<last_name>'],
                    arguments['<employee_type>'].lower(),
                    arguments['--wants_accommodation']
                    )
     elif arguments['print_person_identifier']:
-        print_person_id(arguments['<first_name>'],
-                                arguments['<last_name>'])
+        print_person_id(arguments['<first_name>'], arguments['<last_name>'])
     elif arguments['reallocate_person']:
         reallocate_person(int(arguments['<person_identifier>']),
                           arguments['<new_room_name>'])
