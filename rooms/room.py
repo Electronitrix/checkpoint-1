@@ -49,6 +49,14 @@ class Room(Base):
                              .format(room_type))
         return new_room
 
+    @staticmethod
+    def is_room_type_valid(room_type):
+        """Checks that the room type is either office or living space"""
+        if room_type in ["office", "living space"]:
+            return True
+        else:
+            return False
+
     def get_random_room(self, rooms, room_type):
         """
         Randomly pick an office or living space based on supplied argument

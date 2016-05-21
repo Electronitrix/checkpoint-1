@@ -65,7 +65,7 @@ def write_to_pickle(object_list, file_name):
 def create_room(name, floor, room_type):
     """ Create room and add to application"""
     room_type = room_type.lower()
-    if is_room_type_valid(room_type):
+    if amity.is_room_type_valid(room_type):
         rooms = get_list_of_objects(rooms_file)
         new_room = amity.create_room(len(rooms), name.lower(),
                                      floor, room_type)
@@ -73,14 +73,6 @@ def create_room(name, floor, room_type):
         print "You have successfully created room - {0}".format(name.upper())
     else:
         print "Failure!!! You entered an Invalid room type."
-
-
-def is_room_type_valid(room_type):
-    """Checks that the room type is either office or living space"""
-    if room_type == "office" or room_type == "living space":
-        return True
-    else:
-        return False
 
 
 def add_room_to_application(rooms, new_room):

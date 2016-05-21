@@ -68,6 +68,11 @@ class Amity(object):
         return new_person, errors
 
     @staticmethod
+    def is_room_type_valid(room_type):
+        """Returns True if room type is valid and False, otherwise"""
+        return Room.is_room_type_valid(room_type)
+
+    @staticmethod
     def get_person_id(first_name, last_name, people):
         """Searches for person identifier
         Returns:
