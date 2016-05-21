@@ -272,7 +272,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
             msg=("{0} != {1}!!!".format(test_output, allocations))
         )
 
-    def add_data_to_memory_for_print_allocation_tests(self):
+    @staticmethod
+    def add_data_to_memory_for_print_allocation_tests():
         main.create_room("iroko", 0, "living space")
         main.create_room("bellows", 0, "office")
         main.add_person("erika", "dike", "fellow", "Y")
@@ -281,7 +282,8 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         main.add_person("stephen", "oduntan", "fellow", "Y")
         main.add_person("nengi", "adoki", "staff")
 
-    def prepare_test_output(self):
+    @staticmethod
+    def prepare_test_output():
         app_output = []
         temp = []
         line_width = 51
