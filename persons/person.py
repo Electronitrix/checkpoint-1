@@ -117,4 +117,4 @@ class Person(Base):
         return unallocated_people
 
     def __str__(self):
-        return "{} {}".format(self.first_name, self.last_name)
+        return "{0} {1}".format(self.first_name, self.last_name)

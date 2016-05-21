@@ -101,10 +101,10 @@ def add_person(first_name, last_name, employee_type, wants_accommodation="N"):
                                               wants_accommodation,
                                               rooms)
         for error in errors:
-            print "{} Please create a new room of this type.".format(error)
+            print "{0} Please create a new room of this type.".format(error)
         if new_person:
             print "\n".join(
-                ["{} was allocated {}.".format(str(new_person).
+                ["{0} was allocated {1}.".format(str(new_person).
                  upper(), str(room).capitalize())
                  for room in new_person.rooms]
             )
@@ -146,7 +146,7 @@ def reallocate_person(person_id, room_name):
             people[person_id] = person
             write_to_pickle(people, people_file)
             write_to_pickle(rooms, rooms_file)
-            print("Successfully allocated {} the {}.".
+            print("Successfully allocated {0} the {1}.".
                   format(person, person.rooms[-1]))
     except ValueError as error:
         print error[0]

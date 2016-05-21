@@ -166,4 +166,4 @@ class Room(Base):
         return copy_of_allocations
 
     def __str__(self):
-        return "{} {}".format(self.name, self.type)
+        return "{0} {1}".format(self.name, self.type)

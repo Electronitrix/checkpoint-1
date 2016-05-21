@@ -202,7 +202,7 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         with capture(main.reallocate_person, 45, "bench hook") as app_output:
             self.assertEqual(
                 test_output, app_output,
-                msg="{} != {}".format(test_output, app_output)
+                msg="{0} != {1}".format(test_output, app_output)
             )
 
     def test_does_not_allocate_to_filled_living_space(self):
@@ -220,7 +220,7 @@ class AmityRoomAllocationFunctionalityTestSuite(unittest.TestCase):
         with capture(main.reallocate_person, 4, "iroko") as app_output:
             self.assertEqual(
                 test_output, app_output,
-                msg=("{} != {}".format(test_output, app_output))
+                msg=("{0} != {1}".format(test_output, app_output))
             )
 
     def test_loads_people(self):
