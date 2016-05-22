@@ -58,15 +58,15 @@ Usage:
 *  main.py load_state <db_file_path>
 *  main.py (-h | --help)
 
-# How to Run Tests
-
-1. Navigate to project directory.
-2. Then, navigate to tests directory.
-3. Run ```nosetests --with-coverage --cover-package=..```
-
 Options:
 *  -h --help                    Show this screen.
 *  --wants_accommodation=<ans>  Specifies if person wants accommodation or not [default: N]
 *  -o=<file_name>               Specifies a file to print output [default: screen]
 *  --db=sqlite_database         Specifies a database to persist data [default: app.db]
 
+
+# How to Run Tests
+
+1. Navigate to project directory.
+2. Then, navigate to tests directory.
+3. Run ```nosetests --with-coverage --cover-package=..```
