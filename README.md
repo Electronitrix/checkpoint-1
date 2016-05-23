@@ -70,3 +70,7 @@ Options:
 1. Navigate to project directory.
 2. Then, navigate to tests directory.
 3. Run ```nosetests --with-coverage --cover-package=..```
+
+# Demonstration
+
+Click [here](https://asciinema.org/a/aebf3uzv8rke1bad2wjiica60) to watch a demonstration of the Amity Room Allocation App.
