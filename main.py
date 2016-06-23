@@ -376,7 +376,7 @@ def recreate_room(rooms):
 if __name__ == '__main__':
     arguments = docopt(__doc__)
 
-    # if an argument called hello was passed, execute the hello logic.
+    # parse arguments from the command line
     if arguments['create_room']:
         for i, (room, floor, type) in enumerate(
             zip(arguments['<name>'], arguments['<floor>'],
