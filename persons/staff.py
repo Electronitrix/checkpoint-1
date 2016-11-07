@@ -1,7 +1,8 @@
-from person import Person
+import person
 
-class Staff(Person):
+
+class Staff(person.Person):
     """Defines the Staff class"""
     __mapper_args__ = {
-        'polymorphic_identity':'staff'
+        'polymorphic_identity': 'staff'
     }
